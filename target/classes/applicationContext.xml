@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	         http://www.springframework.org/schema/beans/spring-beans.xsd
+	         http://www.springframework.org/schema/lang
+	         http://www.springframework.org/schema/lang/spring-lang.xsd      
+	         http://www.springframework.org/schema/tx   
+	         http://www.springframework.org/schema/tx/spring-tx.xsd    
+	         http://www.springframework.org/schema/aop     
+	         http://www.springframework.org/schema/aop/spring-aop.xsd    
+	         http://www.springframework.org/schema/mvc     
+	         http://www.springframework.org/schema/mvc/spring-mvc.xsd   
+	         http://www.springframework.org/schema/context     
+	         http://www.springframework.org/schema/context/spring-context.xsd
+	         http://www.springframework.org/schema/cache
+	         http://www.springframework.org/schema/cache/spring-cache.xsd
+	         http://www.springframework.org/schema/task 
+	         http://www.springframework.org/schema/task/spring-task.xsd">
+	<context:component-scan base-package="com.hzjx.test.*" /><!-- 配置扫描bean对象 -->  
+	<!-- 只有配置了如下标签，@RequestMapping中的produces才会起作用，跟其注册的消息体转换类有关 -->
+     <mvc:annotation-driven>
+         <mvc:message-converters register-defaults="true">
+             <bean
+                 class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                 <property name="supportedMediaTypes" value="application/json" />
+             </bean>
+         </mvc:message-converters>
+     </mvc:annotation-driven>
+     <mvc:default-servlet-handler />
+    
+	
+	<!-- 加载数据库配置文件 -->  
+	 <bean id="propertyConfigurer"
+         class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+         <property name="locations">
+             <list>
+                 <value>classpath:dbcp.properties</value>
+             </list>
+         </property>
+     </bean>
+     <!-- 阿里 druid数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"><!-- init-method="init" destroy-method="close" -->
+        <!-- 基本属性 url、user、password -->
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${username}" />
+        <property name="password" value="${password}" />
+        <property name="driverClassName" value="${jdbc.driverClassName}" />
+
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="5" />
+        <property name="minIdle" value="10" />
+        <property name="maxActive" value="20" />
+
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="60000" />
+
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+
+        <property name="validationQuery" value="SELECT 'x'" />
+        <property name="testWhileIdle" value="true" />
+        <property name="testOnBorrow" value="false" />
+        <property name="testOnReturn" value="false" />
+
+        <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+        <property name="poolPreparedStatements" value="true" />
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+
+        <!-- 连接泄漏处理。Druid提供了RemoveAbandanded相关配置，用来关闭长时间不使用的连接（例如忘记关闭连接）。 -->
+        <property name="removeAbandoned" value="true" />
+        <!-- 1800秒，也就是30分钟 -->
+        <property name="removeAbandonedTimeout" value="1800" />
+        <!-- 关闭abanded连接时输出错误日志 -->
+        <property name="logAbandoned" value="true" />
+
+        <!-- 配置监控统计拦截的filters, 监控统计："stat",防SQL注入："wall",组合使用： "stat,wall" -->
+        <property name="filters" value="stat" />
+    </bean>
+    <bean id="oracledataSource" class="com.alibaba.druid.pool.DruidDataSource"><!-- init-method="init" destroy-method="close" -->
+        <!-- 基本属性 url、user、password -->
+        <property name="url" value="${oracle.jdbc.url}" />
+        <property name="username" value="${oracle.username}" />
+        <property name="password" value="${oracle.password}" />
+        <property name="driverClassName" value="${oracle.jdbc.driverClassName}" />
+
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="5" />
+        <property name="minIdle" value="10" />
+        <property name="maxActive" value="20" />
+
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="60000" />
+
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+
+        <property name="validationQuery" value="SELECT 1 from dual" />
+        <property name="testWhileIdle" value="true" />
+        <property name="testOnBorrow" value="false" />
+        <property name="testOnReturn" value="false" />
+
+        <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+        <property name="poolPreparedStatements" value="true" />
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+
+        <!-- 连接泄漏处理。Druid提供了RemoveAbandanded相关配置，用来关闭长时间不使用的连接（例如忘记关闭连接）。 -->
+        <property name="removeAbandoned" value="true" />
+        <!-- 1800秒，也就是30分钟 -->
+        <property name="removeAbandonedTimeout" value="1800" />
+        <!-- 关闭abanded连接时输出错误日志 -->
+        <property name="logAbandoned" value="true" />
+
+        <!-- 配置监控统计拦截的filters, 监控统计："stat",防SQL注入："wall",组合使用： "stat,wall" -->
+        <property name="filters" value="stat" />
+    </bean>
+    
+    <!-- 加载访问jdbc模板，提供模板方式操作数据库数据 -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource">
+			<ref bean="dataSource"/>
+		</property>
+	</bean> 
+	<bean id="oraclejdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource">
+			<ref bean="oracledataSource"/>
+		</property>
+	</bean> 
+	         
+	<bean id="sessionFactory"
+        class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <!-- 注入数据源 相关信息看源码 -->
+        <property name="dataSource" ref="dataSource" />
+        <!-- hibernate配置信息 -->
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+            </props>
+        </property>
+        <!-- 扫描hibernate注解配置的entity -->
+        <property name="packagesToScan" value="com.hzjx.test.*" />
+    </bean>
+    <bean id="oraclesessionFactory"
+        class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <!-- 注入数据源 相关信息看源码 -->
+        <property name="dataSource" ref="oracledataSource" />
+        <!-- hibernate配置信息 -->
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${oracle.hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+            </props>
+        </property>
+        <!-- 扫描hibernate注解配置的entity -->
+        <property name="packagesToScan" value="com.hzjx.test.*" />
+    </bean>
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory"  ref="sessionFactory" />
+	</bean>
+	<bean id="oracletransactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory"  ref="oraclesessionFactory" />
+	</bean>
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*" propagation="REQUIRED"/>
+
+		</tx:attributes>
+	</tx:advice>
+	<tx:advice id="oracletxAdvice" transaction-manager="oracletransactionManager">
+		<tx:attributes>
+			<tx:method name="*" propagation="REQUIRED"/>
+
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:pointcut id="allManagerMethod" expression="execution (* com.hzjx.*.services.*.*(..))"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="allManagerMethod"/>
+	</aop:config>
+	
+	<!-- 使用注解方式实现AOP -->
+	<aop:aspectj-autoproxy/>
+
+	<bean id="threadPoolTaskExecutor"
+		  class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+
+		<!-- 核心线程数，默认为1 -->
+		<property name="corePoolSize" value="30" />
+
+		<!-- 最大线程数，默认为Integer.MAX_VALUE -->
+		<property name="maxPoolSize" value="100" />
+
+		<!-- 队列最大长度，一般需要设置值>=notifyScheduledMainExecutor.maxNum；默认为Integer.MAX_VALUE
+        <property name="queueCapacity" value="1000" /> -->
+
+		<!-- 线程池维护线程所允许的空闲时间，默认为60s -->
+		<property name="keepAliveSeconds" value="60" />
+
+		<!-- 线程池对拒绝任务（无线程可用）的处理策略，目前只支持AbortPolicy、CallerRunsPolicy；默认为后者 -->
+		<property name="rejectedExecutionHandler">
+			<!-- AbortPolicy:直接抛出java.util.concurrent.RejectedExecutionException异常 -->
+			<!-- CallerRunsPolicy:主线程直接执行该任务，执行完之后尝试添加下一个任务到线程池中，可以有效降低向线程池内添加任务的速度 -->
+			<!-- DiscardOldestPolicy:抛弃旧的任务、暂不支持；会导致被丢弃的任务无法再次被执行 -->
+			<!-- DiscardPolicy:抛弃当前任务、暂不支持；会导致被丢弃的任务无法再次被执行 -->
+			<bean class="java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy" />
+		</property>
+	</bean>           
+	         
+</beans>
